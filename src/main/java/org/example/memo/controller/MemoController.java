@@ -8,9 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/memos")
@@ -19,7 +18,7 @@ public class MemoController {
     private final Map<Long, Memo> memoList = new HashMap<>();
 
     @PostMapping
-    public ResponseEntity<MemoResponseDto> creatMemo(@RequestBody MemoRequestDto dto) {
+    public ResponseEntity<MemoResponseDto> createMemo(@RequestBody MemoRequestDto dto) {
 
         // 식별자가 1씩 증가 하도록 만듦
         Long memoId = memoList.isEmpty() ? 1 : Collections.max(memoList.keySet()) + 1;
@@ -40,6 +39,24 @@ public class MemoController {
 
         return new MemoResponseDto(memo);
 
+    }
+
+    @GetMapping
+    public ResponseEntity<List<MemoResponseDto>> findAllMemos() {
+
+        // List 초기화
+        List<MemoResponseDto> responseList = new ArrayList<>();
+
+        // HashMap<Memo> → List<MemoResponseDto>
+        for (Memo memo : memoList.values()) {
+            MemoResponseDto responseDto = new MemoResponseDto(memo);
+            responseList.add(responseDto);
+            // 즉, responseList.add(new MemoResponseDto(memo));
+        }
+        // STREAM을 사용한 방법
+        responseList = memoList.values().stream().map(MemoResponseDto::new).toList();
+
+        return new ResponseEntity<>(responseList, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
